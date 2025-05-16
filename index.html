@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PHP AI Chat</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI聊天助手</h1>
+            <div class="user-panel">
+                <span id="username"></span>
+                <button onclick="logout()">退出</button>
+            </div>
+        </div>
+        
+        <div class="chat-box" id="chatBox"></div>
+        
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="输入消息...">
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const chatBox = document.getElementById('chatBox');
+            
+            chatBox.innerHTML += `<div class="message user">${input.value}</div>`;
+            
+            try {
+                const response = await fetch('/api/chat.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        messages: [{
+                            role: "user",
+                            content: input.value
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                chatBox.innerHTML += `<div class="message ai">${data.response}</div>`;
+                input.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        function logout() {
+            fetch('/api/auth.php?action=logout', { method: 'POST' })
+            .then(() => window.location.reload());
+        }
+    </script>
+</body>
+</html>
